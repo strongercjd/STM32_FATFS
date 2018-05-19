@@ -3,7 +3,7 @@
 <project>
   <fileVersion>2</fileVersion>
   <configuration>
-    <name>STM32_ETH</name>
+    <name>STM32_Fatfs</name>
     <toolchain>
       <name>ARM</name>
     </toolchain>
@@ -96,6 +96,30 @@
     <name>EWARM</name>
     <file>
       <name>$PROJ_DIR$\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F2xx\startup\iar\startup_stm32f2xx.s</name>
+    </file>
+  </group>
+  <group>
+    <name>Fatfs</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\option\cc936.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\diskio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\diskio.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\ff.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\ff.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\ffconf.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Third_Party\fatfs\integer.h</name>
     </file>
   </group>
   <group>

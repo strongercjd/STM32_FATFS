@@ -282,11 +282,20 @@ uint8 Ex_FLASH_Write(uint32_t WriteAddr,uint8_t* pBuffer,  uint16_t NumByteToWri
     //Start_Sec = WriteAddr/Ex_FLASH_SecSize;
     Start_Addr = WriteAddr % Ex_FLASH_SecSize;
     
-    if(Start_Addr ==0)
+    if(Start_Addr ==0){
       Sec_num = NumByteToWrite/Ex_FLASH_SecSize;
-    else
-      Sec_num = (NumByteToWrite - (Ex_FLASH_SecSize-Start_Addr))/Ex_FLASH_SecSize;
-    End_Addr = (WriteAddr+NumByteToWrite)%Ex_FLASH_SecSize;
+      End_Addr = (WriteAddr+NumByteToWrite)%Ex_FLASH_SecSize;
+    }else {
+      if(NumByteToWrite <Ex_FLASH_SecSize){
+        Sec_num = 0;
+        End_Addr = (WriteAddr+NumByteToWrite)%Ex_FLASH_SecSize;
+      }else{
+        Sec_num = (NumByteToWrite - (Ex_FLASH_SecSize-Start_Addr))/Ex_FLASH_SecSize;
+        End_Addr = (WriteAddr+NumByteToWrite)%Ex_FLASH_SecSize;
+      }
+    }
+      
+    
 
     if(Start_Addr != 0)
     {
@@ -300,7 +309,9 @@ uint8 Ex_FLASH_Write(uint32_t WriteAddr,uint8_t* pBuffer,  uint16_t NumByteToWri
       }
       
       Ex_FLASH_BufferWrite((WriteAddr-Start_Addr), Sec_Data, Start_Addr);
-      Ex_FLASH_BufferWrite(WriteAddr, pBuffer, (Ex_FLASH_SecSize-Start_Addr));
+      Ex_FLASH_BufferWrite(WriteAddr, pBuffer, NumByteToWrite);
+      if((Start_Addr+NumByteToWrite)<Ex_FLASH_SecSize)
+        Ex_FLASH_BufferWrite(WriteAddr+NumByteToWrite, &Sec_Data[WriteAddr+NumByteToWrite], (Ex_FLASH_SecSize-WriteAddr+NumByteToWrite));
       
       WriteAddr = WriteAddr + (Ex_FLASH_SecSize -Start_Addr);
       pBuffer = pBuffer + (Ex_FLASH_SecSize -Start_Addr);  

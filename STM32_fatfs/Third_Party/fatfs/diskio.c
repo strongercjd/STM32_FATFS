@@ -8,15 +8,16 @@
 /*-----------------------------------------------------------------------*/
 
 #include "diskio.h"		/* FatFs lower layer API */
-#include "usbdisk.h"	/* Example: Header file of existing USB MSD control module */
-#include "atadrive.h"	/* Example: Header file of existing ATA harddisk control module */
-#include "sdcard.h"		/* Example: Header file of existing MMC/SDC contorl module */
+#include "Ex_Flash.h"
 
 /* Definitions of physical drive number for each drive */
-#define ATA		0	/* Example: Map ATA harddisk to physical drive 0 */
-#define MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define USB		2	/* Example: Map USB MSD to physical drive 2 */
+#define ATA		1	/* Example: Map ATA harddisk to physical drive 0 */
+#define Ex_Flash	0	//外部串行NorFlash
 
+
+#define FATFS_SECTOR_SIZE 	512	
+#define FATFS_BLOCK_SIZE   	8         //每个BLOCK有8个扇区
+#define FATFS_SECTOR_COUNT      1024      //GD25Q16,前1M字节给FATFS占用
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -31,25 +32,12 @@ DSTATUS disk_status (
 
 	switch (pdrv) {
 	case ATA :
-		result = ATA_disk_status();
-
-		// translate the reslut code here
-
 		return stat;
-
-	case MMC :
-		result = MMC_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case USB :
-		result = USB_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
+        case Ex_Flash :
+          result = Ex_FLASH_ReadID();
+          
+          stat =0;
+          return stat;
 	}
 	return STA_NOINIT;
 }
@@ -69,25 +57,12 @@ DSTATUS disk_initialize (
 
 	switch (pdrv) {
 	case ATA :
-		result = ATA_disk_initialize();
-
-		// translate the reslut code here
-
 		return stat;
-
-	case MMC :
-		result = MMC_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case USB :
-		result = USB_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
+        case Ex_Flash :
+          result = Ex_FLASH_ReadID();
+          
+          stat =0;
+          return stat;
 	}
 	return STA_NOINIT;
 }
@@ -107,35 +82,22 @@ DRESULT disk_read (
 {
 	DRESULT res;
 	int result;
-
+        if (!count)
+          return RES_PARERR;
 	switch (pdrv) {
 	case ATA :
-		// translate the arguments here
-
-		result = ATA_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
 		return res;
-
-	case MMC :
-		// translate the arguments here
-
-		result = MMC_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case USB :
-		// translate the arguments here
-
-		result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
+        case Ex_Flash:
+          for(;count>0;count--)
+          {
+            Ex_Flash_RD(sector*FATFS_SECTOR_SIZE,buff,FATFS_SECTOR_SIZE);
+            sector++;
+            buff+=FATFS_SECTOR_SIZE;
+          }
+          res = RES_OK;
+          return res;
 	}
+
 
 	return RES_PARERR;
 }
@@ -158,31 +120,16 @@ DRESULT disk_write (
 
 	switch (pdrv) {
 	case ATA :
-		// translate the arguments here
-
-		result = ATA_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
 		return res;
-
-	case MMC :
-		// translate the arguments here
-
-		result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case USB :
-		// translate the arguments here
-
-		result = USB_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
+        case Ex_Flash:
+          for(;count>0;count--)
+          {
+            Ex_FLASH_Write(sector*FATFS_SECTOR_SIZE,(uint8_t*)buff,FATFS_SECTOR_SIZE);
+            sector++;
+            buff+=FATFS_SECTOR_SIZE;
+          }
+          res = 0;
+          return res;
 	}
 
 	return RES_PARERR;
@@ -205,24 +152,41 @@ DRESULT disk_ioctl (
 
 	switch (pdrv) {
 	case ATA :
-
-		// Process of the command for the ATA drive
-
-		return res;
-
-	case MMC :
-
-		// Process of the command for the MMC/SD card
-
-		return res;
-
-	case USB :
-
-		// Process of the command the USB drive
-
-		return res;
+          
+          // Process of the command for the ATA drive
+          
+          return res;
+        case Ex_Flash:
+          switch(cmd)
+          {
+          case CTRL_SYNC:
+            res = RES_OK; 
+            break;	 
+          case GET_SECTOR_SIZE:
+            *(WORD*)buff = FATFS_SECTOR_SIZE;
+            res = RES_OK;
+            break;	 
+          case GET_BLOCK_SIZE:
+            *(WORD*)buff = FATFS_SECTOR_SIZE;
+            res = RES_OK;
+            break;	 
+          case GET_SECTOR_COUNT:
+            *(DWORD*)buff = FATFS_SECTOR_COUNT;
+            res = RES_OK;
+            break;
+          default:
+            res = RES_PARERR;
+            break;
+          }
+          return res;
 	}
 
 	return RES_PARERR;
 }
-
+//User defined function to give a current time to fatfs module      */
+//31-25: Year(0-127 org.1980), 24-21: Month(1-12), 20-16: Day(1-31) */                                                                                                                                                                                                                                          
+//15-11: Hour(0-23), 10-5: Minute(0-59), 4-0: Second(0-29 *2) */                                                                                                                                                                                                                                                
+DWORD get_fattime (void)
+{				 
+	return 0;
+}
