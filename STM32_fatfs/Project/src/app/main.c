@@ -51,12 +51,13 @@ int main(){
   //Ex_FLASH_SectorErase(0);
 
   res=f_mount(&fs1[0],"0:",1);
-  if(res != 0)
-    res=f_mkfs("0:",1,4096);
-  res=f_mount(&fs1[0],"0:",1); 
+  if(res != 0){
+    res=f_mkfs("0:",1,2*1024*1024);
+    res=f_mount(&fs1[0],"0:",1); 
+  }
   res=f_open (&fil,"0:/message.txt", FA_CREATE_ALWAYS|FA_WRITE);	
   
-  f_write (&fil, "onbon", 10, &bww);
+  f_write (&fil, "onbon", 2*1024, &bww);
   
   f_close(&fil);
   

@@ -17,7 +17,7 @@
 
 #define FATFS_SECTOR_SIZE 	512	
 #define FATFS_BLOCK_SIZE   	8         //每个BLOCK有8个扇区
-#define FATFS_SECTOR_COUNT      1024      //GD25Q16,前1M字节给FATFS占用
+#define FATFS_SECTOR_COUNT      2*1024*1024      //GD25Q16,前2M字节给FATFS占用
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -167,7 +167,7 @@ DRESULT disk_ioctl (
             res = RES_OK;
             break;	 
           case GET_BLOCK_SIZE:
-            *(WORD*)buff = FATFS_SECTOR_SIZE;
+            *(WORD*)buff = FATFS_BLOCK_SIZE;
             res = RES_OK;
             break;	 
           case GET_SECTOR_COUNT:
